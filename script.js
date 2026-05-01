@@ -59,12 +59,14 @@ window.addEventListener('DOMContentLoaded', function () {
   var nameInput = document.getElementById('name');
   var emailInput = document.getElementById('email');
   var phoneInput = document.getElementById('phone');
-  var datetimeInput = document.getElementById('datetime');
+  var dateInput = document.getElementById('date');
+  var timeSelect = document.getElementById('time');
 
   var nameError = document.getElementById('name-error');
   var emailError = document.getElementById('email-error');
   var phoneError = document.getElementById('phone-error');
-  var datetimeError = document.getElementById('datetime-error');
+  var dateError = document.getElementById('date-error');
+  var timeError = document.getElementById('time-error');
 
   function showError(input, errorEl, message) {
     errorEl.textContent = message;
@@ -114,18 +116,28 @@ window.addEventListener('DOMContentLoaded', function () {
     return true;
   }
 
-  function validateDatetime() {
-    if (!datetimeInput.value) {
-      showError(datetimeInput, datetimeError, 'ご希望日時を選択してください。');
+  function validateDate() {
+    if (!dateInput.value) {
+      showError(dateInput, dateError, 'ご希望日を選択してください。');
       return false;
     }
-    var selected = new Date(datetimeInput.value);
-    var now = new Date();
-    if (selected < now) {
-      showError(datetimeInput, datetimeError, '過去の日時は選択できません。');
+    var selected = new Date(dateInput.value + 'T00:00:00');
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selected < today) {
+      showError(dateInput, dateError, '過去の日付は選択できません。');
       return false;
     }
-    clearError(datetimeInput, datetimeError);
+    clearError(dateInput, dateError);
+    return true;
+  }
+
+  function validateTime() {
+    if (!timeSelect.value) {
+      showError(timeSelect, timeError, 'ご希望時間を選択してください。');
+      return false;
+    }
+    clearError(timeSelect, timeError);
     return true;
   }
 
@@ -150,8 +162,12 @@ window.addEventListener('DOMContentLoaded', function () {
     if (phoneInput.classList.contains('is-error')) validatePhone();
   });
 
-  datetimeInput.addEventListener('change', function () {
-    if (datetimeInput.classList.contains('is-error')) validateDatetime();
+  dateInput.addEventListener('change', function () {
+    if (dateInput.classList.contains('is-error')) validateDate();
+  });
+
+  timeSelect.addEventListener('change', function () {
+    if (timeSelect.classList.contains('is-error')) validateTime();
   });
 
   // ================================
@@ -165,9 +181,10 @@ window.addEventListener('DOMContentLoaded', function () {
     var isNameValid = validateName();
     var isEmailValid = validateEmail();
     var isPhoneValid = validatePhone();
-    var isDatetimeValid = validateDatetime();
+    var isDateValid = validateDate();
+    var isTimeValid = validateTime();
 
-    if (!isNameValid || !isEmailValid || !isPhoneValid || !isDatetimeValid) {
+    if (!isNameValid || !isEmailValid || !isPhoneValid || !isDateValid || !isTimeValid) {
       var firstError = document.querySelector('.is-error');
       if (firstError) {
         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -180,7 +197,8 @@ window.addEventListener('DOMContentLoaded', function () {
       name: nameInput.value.trim(),
       email: emailInput.value.trim(),
       phone: phoneInput.value.trim(),
-      datetime: datetimeInput.value,
+      date: dateInput.value,
+      time: timeSelect.value,
       plan: document.getElementById('plan').value,
       people: document.getElementById('people').value
     };
@@ -200,15 +218,7 @@ window.addEventListener('DOMContentLoaded', function () {
         document.getElementById('thanks-plan').textContent = data.plan;
         document.getElementById('thanks-name').textContent = data.name;
         document.getElementById('thanks-people').textContent = data.people;
-
-        // 日時を見やすくフォーマット
-        var dt = new Date(data.datetime);
-        var formatted = dt.getFullYear() + '/' + 
-          String(dt.getMonth() + 1).padStart(2, '0') + '/' + 
-          String(dt.getDate()).padStart(2, '0') + ' ' + 
-          String(dt.getHours()).padStart(2, '0') + ':' + 
-          String(dt.getMinutes()).padStart(2, '0');
-        document.getElementById('thanks-datetime').textContent = formatted;
+        document.getElementById('thanks-datetime').textContent = data.date + ' ' + data.time;
 
         // フォーム非表示 → Thanks表示
         bookingSection.style.display = 'none';
@@ -219,7 +229,8 @@ window.addEventListener('DOMContentLoaded', function () {
         nameInput.value = '';
         emailInput.value = '';
         phoneInput.value = '';
-        datetimeInput.value = '';
+        dateInput.value = '';
+        timeSelect.selectedIndex = 0;
         document.getElementById('plan').selectedIndex = 0;
         document.getElementById('people').selectedIndex = 0;
       })
